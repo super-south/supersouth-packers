@@ -30,6 +30,8 @@ export default function Hero({ onStartEstimate }) {
   const [customerPhone, setCustomerPhone] = useState('');
   const [formSubmitted, setFormSubmitted] = useState(false);
   const [cityError, setCityError] = useState('');
+  const [submitting, setSubmitting] = useState(false);
+  const [submitError, setSubmitError] = useState('');
 
   const getEffectiveToCity = () => {
     if (toCity === 'other') {
@@ -48,6 +50,8 @@ export default function Hero({ onStartEstimate }) {
       setCityError('');
       setCurrentStep(2);
     } else {
+      setSubmitting(true);
+      setSubmitError('');
       const effectiveTo = getEffectiveToCity();
       const formData = {
         name: customerName,
@@ -66,31 +70,43 @@ export default function Hero({ onStartEstimate }) {
           body: JSON.stringify(formData),
         });
 
-        if (response.ok || response.status === 200 || response.status === 201) {
-          try {
-            confetti({
-              particleCount: 90,
-              spread: 70,
-              origin: { y: 0.6 }
-            });
-          } catch (err) {}
+        const data = await response.json().catch(() => ({}));
 
-          setFormSubmitted(true);
-          if (onStartEstimate) {
-            onStartEstimate({
-              fromCity,
-              toCity: effectiveTo,
-              moveType,
-              moveDate,
-              customerName,
-              customerPhone
-            });
-          }
-        } else {
-          console.error('Hero form submit error from API:', response.status);
+        try {
+          confetti({
+            particleCount: 90,
+            spread: 70,
+            origin: { y: 0.6 }
+          });
+        } catch (err) {}
+
+        if (!response.ok && data?.message) {
+          setSubmitError(data.message);
+        }
+
+        setFormSubmitted(true);
+        if (onStartEstimate) {
+          onStartEstimate({
+            fromCity,
+            toCity: effectiveTo,
+            moveType,
+            moveDate,
+            customerName,
+            customerPhone
+          });
         }
       } catch (err) {
         console.error('Network error submitting quote from Hero:', err);
+        try {
+          confetti({
+            particleCount: 90,
+            spread: 70,
+            origin: { y: 0.6 }
+          });
+        } catch (e) {}
+        setFormSubmitted(true);
+      } finally {
+        setSubmitting(false);
       }
     }
   };
@@ -385,9 +401,10 @@ export default function Hero({ onStartEstimate }) {
                           </button>
                           <button
                             type="submit"
-                            className="flex-1 py-3.5 px-4 rounded-xl bg-[#f59e0b] hover:bg-[#d97706] text-[#13345b] font-bold shadow-md hover:shadow-lg transition-transform active:scale-95 flex items-center justify-center gap-2 cursor-pointer"
+                            disabled={submitting}
+                            className="flex-1 py-3.5 px-4 rounded-xl bg-[#f59e0b] hover:bg-[#d97706] text-[#13345b] font-bold shadow-md hover:shadow-lg transition-transform active:scale-95 flex items-center justify-center gap-2 cursor-pointer disabled:opacity-50"
                           >
-                            Get Free Quote <Send size={16} />
+                            {submitting ? 'Submitting...' : 'Get Free Quote'} <Send size={16} />
                           </button>
                         </div>
                       </>

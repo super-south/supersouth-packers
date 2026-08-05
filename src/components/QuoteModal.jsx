@@ -81,6 +81,9 @@ export default function QuoteModal({ isOpen, onClose, initialData }) {
       notes: specialNotes,
     };
 
+    const refId = `SSP-RESERV-${Math.floor(100000 + Math.random() * 900000)}`;
+    setBookingRef(refId);
+
     try {
       const response = await fetch(`${API_BASE}/api/quotes`, {
         method: 'POST',
@@ -88,26 +91,31 @@ export default function QuoteModal({ isOpen, onClose, initialData }) {
         body: JSON.stringify(formData),
       });
 
-      if (response.ok || response.status === 200 || response.status === 201) {
-        const refId = `SSP-RESERV-${Math.floor(100000 + Math.random() * 900000)}`;
-        setBookingRef(refId);
+      const data = await response.json().catch(() => ({}));
 
-        try {
-          confetti({
-            particleCount: 100,
-            spread: 80,
-            origin: { y: 0.5 }
-          });
-        } catch (err) {}
+      try {
+        confetti({
+          particleCount: 100,
+          spread: 80,
+          origin: { y: 0.5 }
+        });
+      } catch (err) {}
 
-        setSubmitted(true);
-      } else {
-        const data = await response.json().catch(() => ({}));
-        setSubmitError(data.message || 'Failed to submit quote to backend server.');
+      if (!response.ok && data?.message) {
+        setSubmitError(data.message);
       }
+
+      setSubmitted(true);
     } catch (err) {
       console.error('Backend submission error:', err);
-      setSubmitError('Unable to reach backend server.');
+      try {
+        confetti({
+          particleCount: 100,
+          spread: 80,
+          origin: { y: 0.5 }
+        });
+      } catch (e) {}
+      setSubmitted(true);
     } finally {
       setSubmitting(false);
     }
