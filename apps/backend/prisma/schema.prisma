@@ -1,0 +1,29 @@
+// Prisma schema for Super South Packers & Movers backend
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider  = "postgresql"
+  url       = env("DATABASE_URL")
+  directUrl = env("DIRECT_URL")
+}
+
+model Lead {
+  id              String   @id @default(uuid())
+  name            String
+  phone           String
+  email           String?
+  movingFrom      String
+  movingTo        String
+  moveDate        DateTime?
+  serviceType     String?
+  items           String?
+  status          String   @default("PENDING")
+  notes           String?
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  @@map("leads")
+}
