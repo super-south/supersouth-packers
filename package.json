@@ -5,9 +5,9 @@
   "type": "module",
   "scripts": {
     "dev": "vite",
-    "build": "vite build --outDir dist && cd apps/backend && npm run build",
+    "build": "vite build --outDir dist && cd apps/backend && npm install && npx nest build",
     "build:frontend": "vite build --outDir dist",
-    "build:backend": "cd apps/backend && npm run build",
+    "build:backend": "cd apps/backend && npm install && npx nest build",
     "lint": "oxlint",
     "preview": "vite preview"
   },
