@@ -49,10 +49,13 @@ export class QuotesService {
         leadId: lead.id,
         data: lead,
       };
-    } catch (error) {
+    } catch (error: any) {
       console.error('=== [PRISMA DATABASE ERROR] ===');
       console.error('Failed to create lead record in Supabase:', error);
-      throw error;
+      return {
+        success: false,
+        message: error?.message || 'Failed to create lead record in database',
+      };
     }
   }
 
